@@ -15,7 +15,7 @@ public class CrashSystem : MonoBehaviour
     private float amount, min, max;
     public float probability;
     public Button LeaveButton;
-
+    public float rocketSpeed = 2;
 
     [Space(10)]
     [Header("Cash Out")]
@@ -66,10 +66,12 @@ public class CrashSystem : MonoBehaviour
 
         }
         crashValue = crashValue < minRange ? Random.Range(minRange, Random.Range(minRange, 3f)) : crashValue;
+
         currentMultiplier = 1;
         currentTime = 0;
         hasStarted = true;
         effects.Play();
+        CameraShake.instance.Shake();
     }
 
    /* public void SetScale()
@@ -110,7 +112,7 @@ public class CrashSystem : MonoBehaviour
 
             currentTime += Time.deltaTime * 0.2f;
             currentMultiplierText.text = "x" + currentMultiplier.ToString("0.00");
-            rocketModel.transform.position = new Vector3(0, currentMultiplier * currentTime, 0);
+            rocketModel.transform.position = new Vector3(0, currentMultiplier * currentTime * rocketSpeed, 0);
             //scaling.position = new Vector3(currentTime + 2.5f, 0, 0);
             //horizontalScaling.position = new Vector3(0, currentMultiplier - 1.1f, 0);
 
@@ -124,7 +126,7 @@ public class CrashSystem : MonoBehaviour
                 rocketModel.GetComponent<SpriteRenderer>().enabled = false;
                 currentMultiplierText.text = "Crashed at\n" + "x" + currentMultiplier.ToString("0.00");
                 currentMultiplierText.color = Color.red;
-
+                CameraShake.instance.Stop();
                 //AddtoHistory();
                 return;
             }
