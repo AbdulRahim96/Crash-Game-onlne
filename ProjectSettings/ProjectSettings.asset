@@ -923,11 +923,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: 
+  cloudProjectId: 55d68a0f-c166-4840-b0c7-8eb76d254872
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
-  organizationId: 
+  projectName: Crash Game
+  organizationId: unity_26fbe70fe9f801c7b229
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   playerDataPath: 

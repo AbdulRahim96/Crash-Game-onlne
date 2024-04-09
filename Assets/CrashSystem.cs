@@ -1,30 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class CrashSystem : MonoBehaviour
 {
     public float minRange, maxRange, currentMultiplier, crashValue, currentTime, currentReward;
-    public float numiratorValue = 10000;
     public bool hasStarted = false;
     //public Transform rocket, scaling, horizontalScaling;
     public GameObject rocketModel;
     public ParticleSystem effects, explosion;
     public Text currentMultiplierText, currentRedwardText;
     private float amount, min, max;
-    public float probability;
+    private float probability;
     public Button LeaveButton;
     public float rocketSpeed = 2;
+    public GameObject messageBox;
 
     [Space(10)]
     [Header("Cash Out")]
-    public Text cashOutText, cashoutScore;
-    public Text crashText, currentCount;
-    public static float cashBackPercentage, minimumRange, remoteCrash;
+    public Text cashOutText; 
+    public Text crashText, countdownText, cashoutScore, otherCashOut;
 
 
-    [Space(10)]
+    [Space(30)]
     [Header("History")]
     public int currentSaveIndex;
     public GameObject content, textObject;
@@ -69,31 +69,44 @@ public class CrashSystem : MonoBehaviour
 
         currentMultiplier = 1;
         currentTime = 0;
+        initializelaunch();
+        
+    }
+
+    async void initializelaunch()
+    {
+        countdownText.text = "Ready to launch in\n3";
+        await delay(1);
+        countdownText.text = "Ready to launch in\n2";
+        await delay(1);
+        countdownText.text = "Ready to launch in\n1";
+        await delay(1);
+        countdownText.text = "";
         hasStarted = true;
         effects.Play();
         CameraShake.instance.Shake();
     }
 
-   /* public void SetScale()
-    {
-        float currentScale = 1;
-        float currentSeconds = 0;
-        for (int i = 0; i < maxRange + 5; i++)
-        {
-            GameObject y_axis = Instantiate(textMesh, scaling.position + new Vector3(0, currentScale, 0), scaling.rotation);
-            y_axis.GetComponent<TextMesh>().text = "x" + currentScale.ToString("0.0");
-            currentScale += 0.5f;
-            y_axis.transform.SetParent(scaling);
-        }
+    /* public void SetScale()
+     {
+         float currentScale = 1;
+         float currentSeconds = 0;
+         for (int i = 0; i < maxRange + 5; i++)
+         {
+             GameObject y_axis = Instantiate(textMesh, scaling.position + new Vector3(0, currentScale, 0), scaling.rotation);
+             y_axis.GetComponent<TextMesh>().text = "x" + currentScale.ToString("0.0");
+             currentScale += 0.5f;
+             y_axis.transform.SetParent(scaling);
+         }
 
-        for (int i = 0; i < maxRange * 50; i++)
-        {
-            GameObject X_axis = Instantiate(textMesh, horizontalScaling.position + new Vector3(currentSeconds/5, 0, 0), Quaternion.identity);
-            X_axis.GetComponent<TextMesh>().text = currentSeconds.ToString("0") + "s";
-            currentSeconds += 10;
-            X_axis.transform.SetParent(horizontalScaling);
-        }
-    }*/
+         for (int i = 0; i < maxRange * 50; i++)
+         {
+             GameObject X_axis = Instantiate(textMesh, horizontalScaling.position + new Vector3(currentSeconds/5, 0, 0), Quaternion.identity);
+             X_axis.GetComponent<TextMesh>().text = currentSeconds.ToString("0") + "s";
+             currentSeconds += 10;
+             X_axis.transform.SetParent(horizontalScaling);
+         }
+     }*/
 
     void LateUpdate()
     {
@@ -123,7 +136,7 @@ public class CrashSystem : MonoBehaviour
                 
                 hasStarted = false;
                 Instantiate(explosion, rocketModel.transform.position, rocketModel.transform.rotation);
-                rocketModel.GetComponent<SpriteRenderer>().enabled = false;
+                Destroy(rocketModel);
                 currentMultiplierText.text = "Crashed at\n" + "x" + currentMultiplier.ToString("0.00");
                 currentMultiplierText.color = Color.red;
                 CameraShake.instance.Stop();
@@ -140,15 +153,15 @@ public class CrashSystem : MonoBehaviour
     {
         hasStarted = false;
         cashOutText.text = "$" + (amount * currentMultiplier).ToString("0.00");
-        currentCount.text = "x" + currentMultiplier.ToString("0.00");
+      //  currentCount.text = "x" + currentMultiplier.ToString("0.00");
         crashText.text = "x" + crashValue.ToString("0.00");
 
         AddtoHistory();
         if (currentMultiplier > PlayerPrefs.GetFloat("cashout"))
             PlayerPrefs.SetFloat("cashout", currentMultiplier);
 
-        if (currentMultiplier >= remoteCrash)
-            PlayerPrefs.SetInt("topmultiplier", 0);
+      /*  if (currentMultiplier >= remoteCrash)
+            PlayerPrefs.SetInt("topmultiplier", 0);*/
     }
 
     public void AddtoHistory()
@@ -161,10 +174,10 @@ public class CrashSystem : MonoBehaviour
     public void Cashback()
     {
 
-        float total = amount * (cashBackPercentage / 100);
+        //float total = amount * (cashBackPercentage / 100);
         
-        currentMultiplierText.text = total.ToString("0") + " Cashback";
-        currentMultiplierText.color = Color.green;
+        //currentMultiplierText.text = total.ToString("0") + " Cashback";
+        //currentMultiplierText.color = Color.green;
     }
 
 
@@ -228,5 +241,18 @@ public class CrashSystem : MonoBehaviour
             }
         }
         
+    }
+
+    public void PrintMessage(string message)
+    {
+        GameObject box = Instantiate(messageBox);
+        box.GetComponentInChildren<Text>().text = message;
+
+        Destroy(box, 2);
+    }
+
+    public Task delay(float seconds)
+    {
+        return Task.Delay((int)(seconds * 1000));
     }
 }
