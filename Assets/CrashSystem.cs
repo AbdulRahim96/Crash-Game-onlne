@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class CrashSystem : MonoBehaviour
 {
     public float minRange, maxRange, currentMultiplier, crashValue, currentTime, currentReward;
     public bool hasStarted = false;
+    public bool hasLeft = false;
     //public Transform rocket, scaling, horizontalScaling;
     public GameObject rocketModel;
-    public ParticleSystem effects, explosion;
+    public ParticleSystem effects, explosion, launchSmoke;
     public Text currentMultiplierText, currentRedwardText;
-    private float amount, min, max;
+    private float amount, min, max, cashoutValue;
     private float probability;
     public Button LeaveButton;
     public float rocketSpeed = 2;
@@ -30,10 +32,17 @@ public class CrashSystem : MonoBehaviour
     public GameObject content, textObject;
     public Color red, green;
     public Sprite gold;
+    private float launchTime;
+    private bool launching;
+    private bool changing;
     private void Start()
     {
+        launchTime = 5;
+        launching = false;
+        changing = false;
         float highscore = PlayerPrefs.GetFloat("cashout", 0);
         cashoutScore.text = highscore.ToString("0.00");
+        
     }
 
     void updatehistory()
@@ -69,22 +78,27 @@ public class CrashSystem : MonoBehaviour
 
         currentMultiplier = 1;
         currentTime = 0;
-        initializelaunch();
+       // initializelaunch();
         
     }
 
-    async void initializelaunch()
+    public void SetCashout(string value)
     {
-        countdownText.text = "Ready to launch in\n3";
+        float val = float.Parse(value);
+        cashoutValue = val;
+    }
+
+    public async void initializelaunch()
+    {
+        launching = true;
+        await delay(3);
+        launchSmoke.Play();
+        effects.Play();
         await delay(1);
-        countdownText.text = "Ready to launch in\n2";
-        await delay(1);
-        countdownText.text = "Ready to launch in\n1";
+        CameraShake.instance.Shake();
         await delay(1);
         countdownText.text = "";
         hasStarted = true;
-        effects.Play();
-        CameraShake.instance.Shake();
     }
 
     /* public void SetScale()
@@ -108,12 +122,29 @@ public class CrashSystem : MonoBehaviour
          }
      }*/
 
-    void LateUpdate()
+    private void FixedUpdate()
+    {
+        if (launching)
+        {
+            launchTime -= Time.deltaTime;
+            if (launchTime <= 0)
+            {
+                countdownText.text = "";
+            }
+            else
+                countdownText.text = launchTime.ToString("0.00");
+
+        }
+
+    }
+
+        void LateUpdate()
     {
         if(hasStarted)
         {
-            if (currentMultiplier > 1.01f)
-                LeaveButton.interactable = true;
+            //if (currentMultiplier > 1.01f)
+            //  LeaveButton.interactable = true;
+            
 
             currentMultiplier += Time.deltaTime * Random.Range(min, max);
             if(max > 1)
@@ -128,9 +159,23 @@ public class CrashSystem : MonoBehaviour
             rocketModel.transform.position = new Vector3(0, currentMultiplier * currentTime * rocketSpeed, 0);
             //scaling.position = new Vector3(currentTime + 2.5f, 0, 0);
             //horizontalScaling.position = new Vector3(0, currentMultiplier - 1.1f, 0);
+            if(!hasLeft)
+            {
+                currentReward = amount * currentMultiplier;
+                currentRedwardText.text = "cash out - $" + currentReward.ToString("0.00");
+            }
 
-            currentReward = amount * currentMultiplier;
-            currentRedwardText.text = "cash out - $" + currentReward.ToString("0.00");
+            if(currentMultiplier >= 2.5f && !changing)
+            {
+                changing = true;
+                updateEnvironemnt();
+            }
+
+            if(currentMultiplier >= cashoutValue)
+            {
+                Leave();
+            }
+            
             if(currentMultiplier >= crashValue)
             {
                 
@@ -144,9 +189,13 @@ public class CrashSystem : MonoBehaviour
                 return;
             }
         }
-        else
-            LeaveButton.interactable = hasStarted;
+        
 
+    }
+
+    public void Leave()
+    {
+        hasLeft = true;
     }
 
     public void report()
@@ -255,4 +304,21 @@ public class CrashSystem : MonoBehaviour
     {
         return Task.Delay((int)(seconds * 1000));
     }
+
+
+    public Material skybox;
+    public Transform lightObject;
+
+    public void updateEnvironemnt()
+    {
+        lightObject.DORotate(new Vector3(50, -14, 0), 15).SetEase(Ease.Linear).OnComplete(() =>
+        {
+            RenderSettings.skybox = skybox;
+            RenderSettings.fog = false;
+            skybox.ti
+        });
+
+
+    }
+    
 }
