@@ -19,6 +19,7 @@ public class CrashSystem : MonoBehaviour
     public Button LeaveButton;
     public float rocketSpeed = 2;
     public GameObject messageBox;
+    public AudioSource launch, rocket;
 
     [Space(10)]
     [Header("Cash Out")]
@@ -32,12 +33,11 @@ public class CrashSystem : MonoBehaviour
     public GameObject content, textObject;
     public Color red, green;
     public Sprite gold;
-    private float launchTime;
+    public float launchTime;
     private bool launching;
     private bool changing;
     private void Start()
     {
-        launchTime = 5;
         launching = false;
         changing = false;
         float highscore = PlayerPrefs.GetFloat("cashout", 0);
@@ -91,7 +91,8 @@ public class CrashSystem : MonoBehaviour
     public async void initializelaunch()
     {
         launching = true;
-        await delay(3);
+        launch.Play();
+        await delay(4.5f);
         launchSmoke.Play();
         effects.Play();
         await delay(1);
@@ -99,6 +100,7 @@ public class CrashSystem : MonoBehaviour
         await delay(1);
         countdownText.text = "";
         hasStarted = true;
+        rocket.Play();
     }
 
     /* public void SetScale()
@@ -315,7 +317,6 @@ public class CrashSystem : MonoBehaviour
         {
             RenderSettings.skybox = skybox;
             RenderSettings.fog = false;
-            skybox.ti
         });
 
 
